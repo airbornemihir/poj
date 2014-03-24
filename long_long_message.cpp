@@ -158,6 +158,10 @@ int main() {
     std::string s1, s2;
     std::cin >> s1;
     std::cin >> s2;
+    // for (int i1 = 0; i1 < 14; ++i1) {
+    //   s1 += s1;
+    //   s2 += s2;
+    // }
     std::string s = s1 + std::string("$") + s2 + std::string("#");
     suffix_tree t(s);
     unsigned int n1 = s1.size();
@@ -171,12 +175,14 @@ int main() {
       dfs_stack.pop();
       if (current.first) {
 	if (current.second->children.size() > 0) {
-	  for (unsigned int i2 = 0; i2 < current.second->children.size(); ++i2) {
+	  for (unsigned int i2 = 0; !(current.second->belongs_in_s1) && i2 < current.second->children.size(); ++i2) {
 	    if (current.second->children[i2]->belongs_in_s1)
 	      current.second->belongs_in_s1 = true;
+	  }
+	  for (unsigned int i2 = 0; !(current.second->belongs_in_s2) && i2 < current.second->children.size(); ++i2) {
 	    if (current.second->children[i2]->belongs_in_s2)
 	      current.second->belongs_in_s2 = true;
-	  }	  
+	  }
 	  max_depth =
 	    (current.second->belongs_in_s1 &&
 	     current.second->belongs_in_s2 &&
