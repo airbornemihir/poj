@@ -158,7 +158,7 @@ int main() {
     std::string s1, s2;
     std::cin >> s1;
     std::cin >> s2;
-    // for (int i1 = 0; i1 < 14; ++i1) {
+    // for (int i1 = 0; i1 < 16; ++i1) {
     //   s1 += s1;
     //   s2 += s2;
     // }
@@ -194,13 +194,6 @@ int main() {
 	    current.second->belongs_in_s1 = true;
 	  else
 	    current.second->belongs_in_s2 = true;
-	  // for (node *temp1 = current.second->parent;
-	  //      temp1 != NULL;
-	  //      temp1 = temp1->parent)
-	  //   if (current.second->begin <= n1) 
-	  //     temp1->belongs_in_s1 = true;
-	  //   else
-	  //     temp1->belongs_in_s2 = true;
 	}
 
 	depth -= current.second->end - current.second->begin;
