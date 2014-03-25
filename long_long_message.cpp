@@ -115,28 +115,15 @@ struct suffix_tree {
           node *temp1 = new node(insertion_point, i1 - 1, n);
           insertion_point->children.push_back(temp1);
           --remainder;
+	  if (active_node != this->root) 
+	    active_node = (active_node->suffix_link != NULL) ? active_node->suffix_link : this->root;
           if (active_node == this->root) {
             if (remainder > 1) {
               active_edge = s[i1 - remainder];
-              --active_length;
+              active_length = remainder - 1;
             } else {
               active_edge = '\0';
               active_length = 0;
-            }
-          } else {
-            if (active_node->suffix_link != NULL)
-              active_node = active_node->suffix_link;
-            else {
-              active_node = this->root;
-	      // new stuff!
-	      if (remainder > 1) {
-		active_edge = s[i1 - remainder];
-		active_length = remainder - 1; // what if remainder ==
-					       // 0 ?
-	      } else {
-		active_edge = '\0';
-		active_length = 0;
-	      }
             }
           }
           if (last_insertion_point != NULL) 
