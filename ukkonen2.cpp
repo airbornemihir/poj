@@ -4,12 +4,18 @@ typedef std::vector<VU> VVU;
 #include <string>
 #include <cassert>
 #define ASSERTS
+#undef ASSERTS
+#include <stack>
+#include <iostream>
 
 struct node {
   unsigned int begin;
   unsigned int end;
   std::vector<node *> children;
   node *suffix_link;
+  bool belongs_in_s1;
+  bool belongs_in_s2;
+  node (): belongs_in_s1(false), belongs_in_s2(false), suffix_link(NULL) {}
 };
 
 struct suffix_tree {
@@ -86,7 +92,7 @@ struct suffix_tree {
 	    insertion_point = active_node;
 	  else {
             substring_exists = true;
-            active_edge = s[active_node->children[i2]->begin];
+            active_edge = s[active_node->children[i2 - 1]->begin];
             active_length = 1;
           }
 	} else {
@@ -102,15 +108,13 @@ struct suffix_tree {
 	  assert(i2 <= active_node->children.size());
 	  #endif /*ASSERTS*/
 	  if (this->s[active_node->children[i2 - 1]->begin + active_length] != this->s[i1 - 1]) {
-	    insertion_point = active_node->children[i2 - 1];
-
 	    nodes_front->begin = active_node->children[i2 - 1]->begin;
 	    nodes_front->end = active_node->children[i2 - 1]->begin + active_length;
 	    nodes_front->children.push_back(active_node->children[i2 - 1]);
 	    active_node->children[i2 - 1]->begin += active_length;
 	    active_node->children[i2 - 1] = nodes_front;
 
-	    ++nodes_front;
+	    insertion_point = nodes_front; ++nodes_front;
 	  } else {
             substring_exists = true;
             ++active_length;
@@ -126,7 +130,7 @@ struct suffix_tree {
 	  --remainder;
 
 	  if (active_node != this->root)
-	    active_node = (active_node->suffix_link != NULL) ? active_node->suffix_link : nodes;
+	    active_node = (active_node->suffix_link != NULL) ? active_node->suffix_link : this->root;
 
 	  if (active_node == this->root) {
 	    if (remainder > 1) {
@@ -151,9 +155,69 @@ struct suffix_tree {
   ~suffix_tree () {delete nodes;}
 };
 
+typedef std::pair<bool, node *> marked_node;
+typedef std::stack<marked_node> marked_node_stack;
 int main() {
-  unsigned int n(1000);
-  int *array = new int(2 * n);
+  // freopen("input.txt", "r", stdin);
+  // freopen("output.txt", "w", stdout);
 
+  {
+    std::string s1, s2;
+    std::cin >> s1;
+    std::cin >> s2;
+    // for (int i1 = 0; i1 < 16; ++i1) {
+    //   s1 += s1;
+    //   s2 += s2;
+    // }
+    std::string s = s1 + std::string("$") + s2 + std::string("#");
+    suffix_tree t(s);
+    unsigned int n1 = s1.size();
+    unsigned int n2 = s2.size();
+    marked_node_stack dfs_stack;
+    unsigned int depth = 0;
+    dfs_stack.push(marked_node(false, t.root));
+    unsigned int max_depth = 0;
+    while (!dfs_stack.empty()) {
+      marked_node current = dfs_stack.top();
+      dfs_stack.pop();
+      if (current.first) {
+	if (current.second->children.size() > 0) {
+	  for (unsigned int i2 = 0; !(current.second->belongs_in_s1) && i2 < current.second->children.size(); ++i2) {
+	    if (current.second->children[i2]->belongs_in_s1)
+	      current.second->belongs_in_s1 = true;
+	  }
+	  for (unsigned int i2 = 0; !(current.second->belongs_in_s2) && i2 < current.second->children.size(); ++i2) {
+	    if (current.second->children[i2]->belongs_in_s2)
+	      current.second->belongs_in_s2 = true;
+	  }
+	  max_depth =
+	    (current.second->belongs_in_s1 &&
+	     current.second->belongs_in_s2 &&
+	     (max_depth < depth)) ?
+	    depth :
+	    max_depth;
+	} else {
+	  if (current.second->begin <= n1) 
+	    current.second->belongs_in_s1 = true;
+	  else
+	    current.second->belongs_in_s2 = true;
+	}
+
+	depth -= current.second->end - current.second->begin;
+      } else {
+	current.first = true;
+	dfs_stack.push(current);
+	depth += current.second->end - current.second->begin;
+
+	for (unsigned int i2 = 0; i2 < current.second->children.size(); ++i2) 
+	  dfs_stack.push(marked_node(false, current.second->children[i2]));
+
+      }
+    }
+    std::cout << max_depth << std::endl;
+  }
+
+  // fclose(stdin);
+  // fclose(stdout);
   return 0;
 }

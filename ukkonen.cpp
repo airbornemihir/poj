@@ -194,7 +194,7 @@ int main() {
 
       }
     }
-    printf("%u\n", max_depth);
+    std::cout << max_depth << std::endl;
   }
 
   // fclose(stdin);
