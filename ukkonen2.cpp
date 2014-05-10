@@ -5,7 +5,6 @@ typedef std::vector<VU> VVU;
 #include <cassert>
 #define ASSERTS
 #undef ASSERTS
-#include <stack>
 #include <iostream>
 
 struct node {
@@ -155,8 +154,35 @@ struct suffix_tree {
   ~suffix_tree () {delete nodes;}
 };
 
-typedef std::pair<bool, node *> marked_node;
-typedef std::stack<marked_node> marked_node_stack;
+void get_max_depth(node *current,
+                   unsigned int *depth,
+                   unsigned int *max_depth,
+                   unsigned int n1,
+                   unsigned int n2) {
+  *depth += current->end - current->begin;
+
+  for (unsigned int i2 = 1; i2 <= current->children.size(); ++i2) 
+    get_max_depth(current->children[i2 - 1], depth, max_depth, n1, n2);
+
+  // non-leaf, has children in s1 or s2, hopefully both.
+  if (current->children.size() > 0) {
+    for (unsigned int i2 = 0; !(current->belongs_in_s1) && i2 < current->children.size(); ++i2) 
+      if (current->children[i2]->belongs_in_s1) current->belongs_in_s1 = true;
+
+    for (unsigned int i2 = 0; !(current->belongs_in_s2) && i2 < current->children.size(); ++i2) 
+      if (current->children[i2]->belongs_in_s2) current->belongs_in_s2 = true;
+
+    if (current->belongs_in_s1 && current->belongs_in_s2 && (*max_depth < *depth))
+      *max_depth = *depth;
+  }
+  // leaf in s1.
+  else if (current->begin <= n1) current->belongs_in_s1 = true;
+  // leaf in s2.
+  else current->belongs_in_s2 = true;
+
+  *depth -= current->end - current->begin;
+}
+
 int main() {
   // freopen("input.txt", "r", stdin);
   // freopen("output.txt", "w", stdout);
@@ -173,48 +199,14 @@ int main() {
     suffix_tree t(s);
     unsigned int n1 = s1.size();
     unsigned int n2 = s2.size();
-    marked_node_stack dfs_stack;
-    unsigned int depth = 0;
-    dfs_stack.push(marked_node(false, t.root));
-    unsigned int max_depth = 0;
-    while (!dfs_stack.empty()) {
-      marked_node current = dfs_stack.top();
-      dfs_stack.pop();
-      if (current.first) {
-	if (current.second->children.size() > 0) {
-	  for (unsigned int i2 = 0; !(current.second->belongs_in_s1) && i2 < current.second->children.size(); ++i2) {
-	    if (current.second->children[i2]->belongs_in_s1)
-	      current.second->belongs_in_s1 = true;
-	  }
-	  for (unsigned int i2 = 0; !(current.second->belongs_in_s2) && i2 < current.second->children.size(); ++i2) {
-	    if (current.second->children[i2]->belongs_in_s2)
-	      current.second->belongs_in_s2 = true;
-	  }
-	  max_depth =
-	    (current.second->belongs_in_s1 &&
-	     current.second->belongs_in_s2 &&
-	     (max_depth < depth)) ?
-	    depth :
-	    max_depth;
-	} else {
-	  if (current.second->begin <= n1) 
-	    current.second->belongs_in_s1 = true;
-	  else
-	    current.second->belongs_in_s2 = true;
-	}
+    unsigned int *depth = new unsigned int(0);
+    unsigned int *max_depth = new unsigned int(0);
 
-	depth -= current.second->end - current.second->begin;
-      } else {
-	current.first = true;
-	dfs_stack.push(current);
-	depth += current.second->end - current.second->begin;
+    get_max_depth(t.root, depth, max_depth, n1, n2);
 
-	for (unsigned int i2 = 0; i2 < current.second->children.size(); ++i2) 
-	  dfs_stack.push(marked_node(false, current.second->children[i2]));
+    std::cout << *max_depth << std::endl;
 
-      }
-    }
-    std::cout << max_depth << std::endl;
+    delete depth; delete max_depth;
   }
 
   // fclose(stdin);
