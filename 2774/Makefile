@@ -1,4 +1,4 @@
-all: ko_aluru ukkonen ukkonen2
+all: ukkonen2
 
 %.o: %.cpp
 	g++ -g -c -o $@ $<
