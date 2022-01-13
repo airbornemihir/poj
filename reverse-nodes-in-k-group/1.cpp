@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
 
+using namespace std;
+
 struct ListNode {
   int val;
   ListNode *next;
@@ -20,14 +22,14 @@ public:
         cur = cur->next;
         ++i1;
       }
-      if (i1 < k) {
+      if ((k <= 1) || (i1 < k)) {
         return head;
       }
       else {
         for (int i2 = 0; i2 < k - 1; i2++) {
           pointers[i2]->next = (i2 == 0) ? head : pointers[i2 - 1];
         }
-        head->next = reverseKGroup(pointers[k - 1]->next, k);
+        head->next = reverseKGroup(pointers[k - 1], k);
         return pointers[k - 2];
       }
     }
