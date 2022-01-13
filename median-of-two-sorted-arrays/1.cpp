@@ -29,6 +29,14 @@ public:
   }
 
   double findMedianSortedArrays(vector<int>& nums1, vector<int>& nums2) {
+    if
+      ((nums1.size() + nums2.size()) % 2 == 0)
+      return
+        (findMedianSortedArraysRanges
+      (nums1, nums2, 0, 0, (nums1.size() + nums2.size())/2)
+         + findMedianSortedArraysRanges
+         (nums1, nums2, 0, 0, (nums1.size() + nums2.size() - 2)/2))/2.0;
+    else
     return
       findMedianSortedArraysRanges
       (nums1, nums2, 0, 0, (nums1.size() + nums2.size() - 1)/2);
